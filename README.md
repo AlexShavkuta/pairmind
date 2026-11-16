@@ -2,7 +2,21 @@
 
 Two peers that share a secret find each other on the public IPFS DHT, get through NAT, prove they both hold the secret, and chat in the terminal. No server is involved.
 
-## Build (Go 1.24+)
+## Install
+
+```sh
+brew install AlexShavkuta/tap/pairmind
+```
+
+## Releasing
+
+```sh
+git tag v0.1.0 && git push --tags
+```
+
+`.github/workflows/release.yml` runs GoReleaser, which builds darwin/linux (amd64, arm64) and windows (amd64), attaches them to a GitHub Release, and commits `Formula/pairmind.rb` to [AlexShavkuta/homebrew-tap](https://github.com/AlexShavkuta/homebrew-tap). Requires the `HOMEBREW_TAP_TOKEN` repo secret (fine-grained PAT, Contents read/write on the tap repo).
+
+## Build from source (Go 1.24+)
 
 ```sh
 go mod tidy      # pulls go-libp2p + go-libp2p-kad-dht

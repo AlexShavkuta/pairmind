@@ -45,6 +45,9 @@ import (
 
 const protoID = "/pairmind/session/0.1.0"
 
+// Set at release time by GoReleaser: -ldflags "-X main.version=1.2.3".
+var version = "dev"
+
 // ---------- key derivation ----------
 
 type keys struct {
@@ -371,9 +374,15 @@ func (a *app) onFound(ctx context.Context, pi peer.AddrInfo) {
 
 func main() {
 	log.SetFlags(log.Ltime)
-	if len(os.Args) > 1 && os.Args[1] == "keygen" {
-		fmt.Println(keygen())
-		return
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "keygen":
+			fmt.Println(keygen())
+			return
+		case "version", "--version", "-version":
+			fmt.Println("pairmind", version)
+			return
+		}
 	}
 	secret := flag.String("secret", "", "shared secret (use `pairmind keygen`)")
 	name := flag.String("name", "", "display name")

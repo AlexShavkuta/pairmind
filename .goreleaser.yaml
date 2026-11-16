@@ -1,0 +1,57 @@
+# Release pipeline: `git tag vX.Y.Z && git push --tags` runs this via
+# .github/workflows/release.yml. Docs: https://goreleaser.com
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: pairmind
+    binary: pairmind
+    env:
+      - CGO_ENABLED=0 # pure-Go build, so one Linux runner can target every OS
+    goos: [darwin, linux, windows]
+    goarch: [amd64, arm64]
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - id: default
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files: [README.md]
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude: ["^docs:", "^chore:"]
+
+# Writes Formula/pairmind.rb into AlexShavkuta/homebrew-tap.
+# Install: brew install AlexShavkuta/tap/pairmind
+brews:
+  - name: pairmind
+    repository:
+      owner: AlexShavkuta
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: https://github.com/AlexShavkuta/pairmind
+    description: Pair two coding agents peer-to-peer with a shared secret
+    commit_author:
+      name: goreleaser-bot
+      email: bot@goreleaser.com
+    commit_msg_template: "pairmind {{ .Tag }}"
+    install: |
+      bin.install "pairmind"
+    test: |
+      assert_match version.to_s, shell_output("#{bin}/pairmind --version")
